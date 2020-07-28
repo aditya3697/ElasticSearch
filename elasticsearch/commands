@@ -1,0 +1,53 @@
+# API'S begin with '_' by convention
+
+# Cluster health
+GET /_cluster/health
+
+# List all nodes
+GET /_cat/nodes?v
+
+# List all indices
+GET /_cat/indices?v
+
+# Simple search query
+GET _search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+
+# Create an index
+PUT /index1
+
+# Create an index specifying shards
+PUT /books
+{
+  "settings": {
+    "number_of_replicas": 2,
+    "number_of_shards": 2
+  }
+}
+
+# Delete an index
+DELETE /index1
+
+# Index a document
+PUT /books/_doc
+{
+  "title": "The new horizon",
+  "author": "Nathon S",
+  "sold": 985
+}
+
+# Index a doc specifying its id
+PUT /books/_doc/23
+{
+  "title": "The Big Bang",
+  "author": "Albert E",
+  "sold": 658424
+}
+
+# Retrieve a document
+GET /books/_doc/23
