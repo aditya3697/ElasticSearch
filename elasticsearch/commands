@@ -6,6 +6,9 @@ GET /_cluster/health
 # List all nodes
 GET /_cat/nodes?v
 
+# List all shards
+GET /_cat/shards?v
+
 # List all indices
 GET /_cat/indices?v
 
@@ -16,7 +19,6 @@ GET _search
     "match_all": {}
   }
 }
-
 
 # Create an index
 PUT /index1
@@ -51,3 +53,44 @@ PUT /books/_doc/23
 
 # Retrieve a document
 GET /books/_doc/23
+
+# Update a document
+POST /books/_update/23
+{
+  "doc": {
+    "sold": 658430 
+  }
+}
+
+# Update by script
+POST /books/_update/23
+{
+  "script": {
+    "source" : "ctx._source.sold += params.limit",
+    "params": {
+      "limit": 50
+    }
+  }
+}
+
+# Update by query
+POST /books/_update_by_query
+{
+  "script": {
+    "source" : "ctx._source.sold++"
+  },
+  "query": {
+    "match_all" : {}
+  }
+}
+
+# Bulk processing
+POST /_bulk
+{ "index": {"_index": "books", "_id": 24} }
+{ "title": "Before Big Bang", "author": "Mat E N", "sold": 3000 }
+{ "update": {"_index": "books", "_id": 24} }
+{ "doc" : {"sold": 3005 }}
+{ "delete": { "_index": "books", "_id": 26}}
+
+# Curl command for importing data
+curl -H "Content-Type: application/x-ndjson" -X POST http://localhost:9200/products/_bulk --data-binary "@products-bulk.json"
