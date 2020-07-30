@@ -94,3 +94,77 @@ POST /_bulk
 
 # Curl command for importing data
 curl -H "Content-Type: application/x-ndjson" -X POST http://localhost:9200/products/_bulk --data-binary "@products-bulk.json"
+
+# Analyzer
+POST /_analyze
+{
+  "text": "We are just 4 light years away from our 2nd nearest star.. !!",
+  "analyzer": "standard",
+  "char_filter": []
+}
+
+# Since we are using keyword analyzer, the text is stored as is.
+POST /_analyze
+{
+  "text": "We are just 4 light years away from our 2nd nearest star.. !!",
+  "analyzer": "keyword"
+}
+
+# Coersion
+POST /coersion/_doc/1
+{
+  "price": 2.1
+}
+# since the price will be saved as a float, 2.2 is converted to a float
+POST /coersion/_doc/2
+{
+  "price": "2.2"
+}
+# This would fail as the price is a float and 2.2abc cannot be converted to float
+POST /coersion/_doc/3
+{
+  "price": "2.2abc"
+}
+# price in the returned object would still be a string "2.2" as the _source key contains the original values that we indexed. And a search query is performed against the values stored in BKD tree(in case float here)
+GET /coersion/_doc/2
+
+# There are no arrays in elasticsearch. Below 2 queries will execute fine as all objects are arrays by default. In case of multiple objects, for a text field, they are concatinated and stored before tokenizing. All values should be of same type or should be coersible
+POST /books/_doc
+{
+  "author": "Virat K"
+}
+POST /books/_doc
+{
+  "author": ["Rohit S", "Shikhar D"]
+}
+
+# Explicit Mapping
+PUT /blogs
+{
+  "mappings": {
+    "properties": {
+      "title": { "type" : "text"},
+      "author": {
+        "properties": {
+          "name": { "type" : "text" },
+          "email": { "type" : "keyword" }
+        }
+      },
+      "content": { "type" : "text" }
+    }
+  }
+}
+
+POST /blogs/_doc/1
+{
+  "title": "How to contact with aliens",
+  "author": {
+    "name": "Neil D Tyson",
+    "email": "neildtyson@caltec.edu"
+  },
+  "context": "In 1989, ..."
+}
+
+#Retrieve mapping
+GET /blogs/_mapping
+GET /blogs/_mapping/field/author.email
