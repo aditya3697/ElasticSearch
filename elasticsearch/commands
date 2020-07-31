@@ -168,3 +168,43 @@ POST /blogs/_doc/1
 #Retrieve mapping
 GET /blogs/_mapping
 GET /blogs/_mapping/field/author.email
+
+# Explicit Mapping with dot notation
+PUT /blogscopy
+{
+  "mappings": {
+    "properties": {
+      "title": { "type" : "text"},
+      "author.name": { "type" : "text" },
+      "author.email": { "type" : "keyword" },
+      "content": { "type" : "text" }
+    }
+  }
+}
+
+# Add a field to an existing mapping
+POST /blogs/_mapping
+{
+  "properties": {
+    "created_at": { "type": "date" }
+  }
+}
+
+# Dates by default should be in ISO 8601 format
+# Sample allowed dates - i) 1905-03-14 ii) 1905-03-14T15:09:26Z iii) 1905-03-14T15:09:26+01:00 iv) 1596175852000 
+# Note that all fields need not be passed. It doesn't store it as a null value either
+POST /blogs/_doc/4
+{
+  "author.name": "Newton",
+  "author.email": "doesntexist@nevermind.com",
+  "title": "F=MA",
+  "created_at": "5661942449000"
+}
+
+# format parameter - Used for specifying date format
+# format properties - Defines nested object and nested field
+# coerce - Enable/Disable coersion for a field
+# doc_values - Enable/Disable use of inverted indices which are used for sorting/aggregation queries. This will save disk space
+# norms - Enable/Disable normalization factors which are used for relevance scoring. this can save disk space at the expense of relevance scores
+# index - Enable/Disable indexing a field. Disabled field cannot be used in search queries but can be used in aggregations.
+# copy_to - copy more than one field to a new field and include the index of the new field. this new field will not be part of _source
