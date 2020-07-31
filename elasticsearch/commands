@@ -208,3 +208,62 @@ POST /blogs/_doc/4
 # norms - Enable/Disable normalization factors which are used for relevance scoring. this can save disk space at the expense of relevance scores
 # index - Enable/Disable indexing a field. Disabled field cannot be used in search queries but can be used in aggregations.
 # copy_to - copy more than one field to a new field and include the index of the new field. this new field will not be part of _source
+
+# Add an alias
+PUT /blogs/_mapping
+{
+  "properties": {
+    "articlecontent": {
+      "type": "alias",
+      "path": "content"
+    }
+  }
+}
+
+# Index patterns - when we want multiple indices to use the same mapping
+POST /_template/access-logs
+{
+  "index_patterns": ["access-logs*"],
+  "settings": {
+    "number_of_shards": 2,
+    "index.mapping.coerce": false
+  }, 
+  "mappings": {
+    "properties": {
+      "ip": { "type": "text" },
+      "timestamp": {"type": "date"},
+      "logentry": { "type": "text" }
+    }
+  }
+}
+# Add an index with name starting with "access-log". If the newly specified index is created with a mapping while creation, the index template and its own mapping are merged while index template having lower priority.
+PUT /access-logs-1905-03-14
+GET /access-logs-1905-03-14
+
+# In dynamic mapping, text fieds are by default mapped in two fields - one text field and one keyword field
+POST /players/_doc
+{
+  "name": "Virat K"
+}
+GET /players
+
+# If an index is created with explicit mapping, with setting dynamic mapping to false, ES still accepts a doc with fields which are not present in explicit mapping but these fields are not indexed.Setting dynamic to "strict" will reject the doc
+PUT /players3
+{
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "name": {"type": "text"}
+    }
+  }
+}
+# This will still index the doc
+POST /players3/_doc
+{
+  "name": "R Sharma",
+  "email": "rsharma@cricismylife.com"
+}
+
+# Indices can be opened/closed. A static setting can be changed only when an index is closed
+POST /players3/_close
+POST /players3/_open
