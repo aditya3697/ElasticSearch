@@ -267,3 +267,23 @@ POST /players3/_doc
 # Indices can be opened/closed. A static setting can be changed only when an index is closed
 POST /players3/_close
 POST /players3/_open
+
+# Simple search queries
+GET /products/_search?q=*
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "tags": "Meat"
+    }
+  }
+}
+# Term level queries perform exact matches on the inverted indices and full text queries go through the analyzers before searching.
+GET /products/_search
+{
+  "query": {
+    "term": {
+      "tags": "Meat"
+    }
+  }
+}
