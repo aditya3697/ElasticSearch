@@ -593,3 +593,48 @@ GET /users/_search
     }
   }
 }
+
+# Retrieve the only few fileds from the source object
+GET /recipe/_search
+{
+  "_source": {
+    "includes":  ["ingredients.*", "created"], 
+    "excludes": "ingredients.name"
+  },
+  "query": {
+    "term": {
+      "title": "pasta"
+    }
+  }
+}
+
+# Specfying the size and offset. Default size is 10.
+GET /recipe/_search?size=5
+{
+  "query": {
+    "match_all": {}
+  }
+}
+GET /recipe/_search
+{
+  "size": 5, 
+  "from": 3, 
+  "query": {
+    "match_all": {}
+  }
+}
+
+# Sorting
+GET /recipe/_search
+{
+  "_source": [ "created", "preparation_time_minutes"], 
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    {
+      "preparation_time_minutes": "asc",
+      "created": "desc"
+    }
+  ]
+}
