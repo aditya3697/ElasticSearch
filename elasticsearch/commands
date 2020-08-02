@@ -795,3 +795,117 @@ GET /orders/_search
     }
   }
 }
+
+# proximity. slop parameter defines the max allowed edit distance to match the query. lower the edit distance, higher the relevance scores. To relaxthe conditions, use a bool query with must and should where must containing the match and should with match_phrase - this will boost relevance of queries matching match_phrase
+PUT /proximity/_doc/1
+{
+  "title": "theory of relativity"
+}
+PUT /proximity/_doc/4
+{
+  "title": "relativity theory special"
+}
+PUT /proximity/_doc/3
+{
+  "title": "special relativity theory"
+}
+GET /proximity/_search
+{
+  "query": {
+    "match_phrase": {
+      "title": {
+        "query": "special theory relativity",
+        "slop": 2
+      }
+    }
+  }
+}
+
+# Fuzziness - edit distance of the terms, fuzziness provided is at a term level. By default, transposition is true - i.e, AB to BA is considered only one edit distance
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "l(bster lvie",
+        "fuzziness": 1
+      }
+    }
+  }
+}
+
+# fuzzy query - this is a term level query. So, LOBSTER will not match with Lobster with a fuziness 2
+GET /products/_search
+{
+  "query": {
+    "fuzzy": {
+      "name": {
+        "value": "LOBSTER",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+
+# Synonyms and custom analyzer
+PUT /synonyms
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "synonym_test": {
+          "type": "synonym",
+          "synonyms": [
+            "awesome => great, super",
+            "elaticsearch, kibana, logstash => elk",
+            "bad, worse"
+          ]
+        }
+      },
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "synonym_test"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "description": {
+        "type": "text",
+        "analyzer": "my_analyzer"
+      }
+    }
+  }
+}
+GET /synonyms/_analyze
+{
+  "text": "The awesome kibana and bad nothing",
+  "analyzer": "my_analyzer"
+}
+
+# Highlighting
+PUT /highlighting/_doc/1
+{
+  "description": "This is the a desc field in the index highlig... adn this is to increase the length of the description to show that the entire description is not shown in the end result"
+}
+GET /highlighting/_search
+{
+  "_source": false, 
+  "query": {
+    "match": {
+      "description": "field"
+    }
+  },
+  "highlight": {
+    "pre_tags": ["<strong>"],
+    "post_tags": ["</strong>"],
+    "fields": {
+      "description": {}
+    }
+  }
+}
