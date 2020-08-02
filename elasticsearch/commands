@@ -738,3 +738,60 @@ GET /recipe/_search
     }
   }
 }
+
+# Bucket with ranges
+GET /recipe/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchaseranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "ranges": [
+          {
+            "from": "now-10d/d",
+            "to": "now"
+          },
+          {
+            "from": "now-20d/d",
+            "to": "now-10d/d"
+          }
+        ]
+      }
+    }
+  }
+}
+
+# Histograms
+GET  /orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "orderswrtorderamount": {
+      "histogram": {
+        "field": "total_amount",
+        "interval": 50
+      }
+    }
+  }
+}
+
+# aggregating missing fields.get the stats for total_amount for fields wihout status
+GET /orders/_search
+{
+  "size": 0,
+  "aggs": {
+    "missingfields": {
+      "missing": {
+        "field": "status.keyword"
+      },
+      "aggs": {
+        "stats_total_amount": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
